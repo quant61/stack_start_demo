@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
+	"golang.org/x/sys/windows"
 	"os"
 	"os/exec"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
-	"golang.org/x/sys/windows"
 )
 
 var procReadProcessMemory = syscall.MustLoadDLL("kernel32.dll").MustFindProc("ReadProcessMemory")
@@ -34,6 +35,19 @@ const (
 	DEBUG_PROCESS    = 0x00000001
 )
 
+// from https://github.com/duarten/Threadjack/blob/master/WinNT.h
+const (
+	CONTEXT_CONTROL = 0x1
+	CONTEXT_INTEGER = 0x2
+	CONTEXT_SEGMENTS = 0x4
+	CONTEXT_FLOATING_POINT = 0x8
+	CONTEXT_DEBUG_REGISTERS = 0x10
+	CONTEXT_XSTATE = 0x20
+    CONTEXT_EXCEPTION_ACTIVE = 0x8000000
+    CONTEXT_SERVICE_ACTIVE = 0x10000000
+    CONTEXT_EXCEPTION_REQUEST = 0x40000000
+    CONTEXT_EXCEPTION_REPORTING = 0x80000000
+)
 
 type ProcMemReader struct {
 	handle windows.Handle
@@ -235,12 +249,31 @@ func run() {
 	h, err := windows.OpenThread(windows.THREAD_GET_CONTEXT, false, th.ThreadID)
 	fmt.Println(h, err)
 
-	// TODO: how to get registers?
+
 	var ctx ThreadContext
+	ctx.ContextFlags = CONTEXT_CONTROL|CONTEXT_INTEGER|CONTEXT_SEGMENTS|CONTEXT_FLOATING_POINT|CONTEXT_DEBUG_REGISTERS
 	r1, r2, err := getThreadContext.Call(uintptr(h), uintptr(unsafe.Pointer(&ctx)))
 	fmt.Println(r1, r2, err)
 
 	printNonZeroFields(ctx)
 	PrintMaps(cmd)
 
+	// TODO: unhardcode order and binary size
+	order := binary.LittleEndian
+	reader := &readerHelper{
+		ByteOrder: order,
+		PtrParser: PtrParser64{order: order},
+
+	}
+	reader.pos = int64(ctx.Rsp)
+	reader.ReaderAt = mem
+	dumpStack(mem, int64(ctx.Rsp))
+
+	a, err := reader.ReadPtr()
+	if err != nil {
+		fmt.Println("can't read mem", err)
+		return
+	}
+
+	fmt.Printf("stack at 0x%x = %d\n", a, reader.pos-int64(reader.PtrParser.Len()))
 }

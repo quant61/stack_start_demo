@@ -12,7 +12,7 @@ But even in this case there are some work made by kernel.
 This demo builds minimally possible executable, runs it in debug more and checks its memory contents.
 
 
-This currently supports only linux on x86_64.
+This currently supports only linux on x86_64. Windows is in progress.
 
 Target executable(ELF) consists only from elf header, single segment/prog header and single int0x3(debug trap) instruction.
 
@@ -24,13 +24,13 @@ Binary is run with debugging and demo shows what its memory contents is.
 - Reads argv, envp and auxv from process memory(started from rsp)
 
 ##### Windows version is in progress(tested in wine):
-- read memory(not tested)
-- registers(doesn't work yet, probably bad args)
+- read memory(works?)
+- registers
 - maps already printed
+- Stack start is found
 - it currently reexecutes itself for target
 - Building minimal PE not implemented
-- Cannot find stack start
-- 
+
 
 ##### TODO:
 - more flexible, configurable and more library-like code
