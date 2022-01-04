@@ -1,4 +1,4 @@
-module stack_start_demo
+module github.com/quant61/stack_start_demo
 
 go 1.17
 
