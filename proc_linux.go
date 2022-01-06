@@ -44,7 +44,7 @@ func startProcess(args startProcessArgs) *exec.Cmd {
 
 	cmd.Env = []string{}
 	err := cmd.Start()
-	fmt.Println(err)
+	fmt.Println("start process: error =", err)
 	return cmd
 }
 
@@ -52,7 +52,7 @@ func startProcess(args startProcessArgs) *exec.Cmd {
 func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 	b, ord := elfFactory()
 	err := ioutil.WriteFile("bin", b, 0755)
-	fmt.Println(err)
+	fmt.Println("write file: error=", err)
 	if err != nil {
 		return
 	}
@@ -66,7 +66,7 @@ func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 		PtrParser: parserFactoryByPtrSize[ptrSize](ord),
 	}
 	printProcessState(cmd, reader)
-	fmt.Println(cmd.Process.Kill())
+	fmt.Println("kill: error = ", cmd.Process.Kill())
 	cmd.Process.Wait()
 	//// TODO: replace with a more clean solution
 	//time.Sleep(100*time.Millisecond)
@@ -76,7 +76,7 @@ func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 func printProcessState(cmd *exec.Cmd, reader *readerHelper) {
 	//ptrSize := int64(reader.PtrParser.Len())
 
-	fmt.Printf("pid=%d\n", cmd.Process.Pid)
+	fmt.Printf("child.pid=%d\n", cmd.Process.Pid)
 	//var regs syscall.PtraceRegs
 	//syscall.PtraceGetRegs(cmd.Process.Pid, &regs)
 	regs, err := GetRegs(cmd)
