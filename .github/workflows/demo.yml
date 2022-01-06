@@ -9,7 +9,10 @@ jobs:
         uses: actions/checkout@v2
       # TODO: post stack dumps here
       - name: run 64-bit binary
-        run: go run . --mode=64
+        run: go run . --mode=64; ./bin
+        continue-on-error: true
+      - name: try bin from previous run
+        run: ./bin
         continue-on-error: true
       - name: run 32-bit binary
         run: go run . --mode=32
