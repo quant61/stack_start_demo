@@ -67,7 +67,8 @@ func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 	}
 	printProcessState(cmd, reader)
 	fmt.Println("kill: error = ", cmd.Process.Kill())
-	cmd.Process.Wait()
+	st, err := cmd.Process.Wait()
+	fmt.Println("wait", st, err)
 	//// TODO: replace with a more clean solution
 	//time.Sleep(100*time.Millisecond)
 }
