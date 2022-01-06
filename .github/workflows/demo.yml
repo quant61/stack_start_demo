@@ -1,0 +1,36 @@
+name: Show results
+on: [push, check_run]
+jobs:
+  Demo-Linux:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      # TODO: post stack dumps here
+      - name: run 64-bit binary
+        run: go run . 64
+        continue-on-error: true
+      - name: run 32-bit binary
+        run: go run . 32
+        continue-on-error: true
+      - name: run in wine
+        env:
+          GOOS: windows
+        run: go build . && ./stack_start_demo.exe
+        continue-on-error: true
+#      - name: qemu-user-static?
+#        env:
+#          GOARCH: arm
+#        run: go build . && qemu-arm-static ./stack_start_demo
+#        continue-on-error: true
+
+  Demo-Windows:
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: run
+        run: go run .
+      # TODO: run ELF in wsl
