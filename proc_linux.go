@@ -61,6 +61,8 @@ func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 	defer runtime.UnlockOSThread()
 	cmd := startProcess(startProcessArgs{})
 
+	b, er := exec.Command("ps", "-ef").CombinedOutput()
+	fmt.Println(string(b), er)
 	reader := &readerHelper{
 		ByteOrder: ord,
 		PtrParser: parserFactoryByPtrSize[ptrSize](ord),
