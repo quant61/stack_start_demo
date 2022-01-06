@@ -275,5 +275,5 @@ func run() {
 		return
 	}
 
-	fmt.Printf("stack at 0x%x = %d\n", a, reader.pos-int64(reader.PtrParser.Len()))
+	fmt.Printf("stack at 0x%x = %d\n", reader.pos-int64(reader.PtrParser.Len()), a)
 }
