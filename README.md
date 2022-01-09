@@ -35,6 +35,9 @@ Binary is run with debugging and demo shows what its memory contents is.
 ##### TODO:
 - more flexible, configurable and more library-like code
 - running in both usual and testing mode
+- separate generating and running target binary
+- make it possible to check stack of both live process and core dump
+  - make it possible to check core dump of foreign platform(e.g check linux core dump inside windows and vice versa)
 - not just print mappings, make them passable to other code
 - more platforms(both OS and cpu)
 - PE(windows) and other binary types support
