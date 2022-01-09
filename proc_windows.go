@@ -66,7 +66,7 @@ func (r ProcMemReader) Close() error {
 }
 
 func NewProcMemReader(cmd *exec.Cmd) (*ProcMemReader, error) {
-	h, err := windows.OpenProcess(0x10, false, uint32(cmd.Process.Pid))
+	h, err := windows.OpenProcess(windows.PROCESS_VM_READ, false, uint32(cmd.Process.Pid))
 	if err != nil {
 		return nil, err
 	}
