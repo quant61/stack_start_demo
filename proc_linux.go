@@ -48,6 +48,21 @@ func startProcess(args startProcessArgs) *exec.Cmd {
 	return cmd
 }
 
+func waitForTraceStop(pid int) (syscall.WaitStatus, error) {
+	var w syscall.WaitStatus
+	_, err := syscall.Wait4(pid, &w, 0, nil)
+	if err != nil {
+		fmt.Println("can't wait:", err)
+		return w, err
+	}
+	if w.Signaled() {
+		fmt.Println("signal", w.Signal())
+	}
+	if w.Stopped() {
+		fmt.Println("stop", w.StopSignal())
+	}
+	return w, err
+}
 
 func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 	b, ord := elfFactory()
@@ -60,6 +75,7 @@ func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 	cmd := startProcess(startProcessArgs{})
+	waitForTraceStop(cmd.Process.Pid)
 
 	reader := &readerHelper{
 		ByteOrder: ord,
