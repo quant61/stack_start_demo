@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/quant61/stack_start_demo/internal"
-	"unsafe"
 )
 
 type ElfProg64 = elf.Prog64
@@ -22,11 +21,25 @@ func ByteOrderFromElfByte(b byte) binary.ByteOrder {
 	}
 }
 
+func ByteOrderToElfByte(ord binary.ByteOrder) elf.Data {
+	switch ord {
+	case binary.LittleEndian:
+		return elf.ELFDATA2LSB
+	case binary.BigEndian:
+		return elf.ELFDATA2MSB
+	case nil:
+		return elf.ELFDATANONE
+	default:
+		panic(fmt.Sprintf("unknown byte order: %T", ord))
+	}
+}
+
+
 func Amd64HeaderLinux() ElfHeader64 {
 	var h ElfHeader64
-	h.Ident = [elf.EI_NIDENT]byte{0x7f, 'E', 'L', 'F'}
-	h.Ident[elf.EI_CLASS] = byte(elf.ELFCLASS64)
-	h.Ident[elf.EI_DATA] = byte(elf.ELFDATA2LSB)
+	h.SetBaseData()
+	h.SetByteOrder(binary.LittleEndian)
+
 	h.Ident[elf.EI_VERSION] = byte(elf.EV_CURRENT)
 	h.Ident[elf.EI_OSABI] = byte(elf.ELFOSABI_NONE)
 	h.Ident[elf.EI_ABIVERSION] = 0
@@ -34,20 +47,15 @@ func Amd64HeaderLinux() ElfHeader64 {
 	h.Type = uint16(elf.ET_EXEC)
 	h.Machine = uint16(elf.EM_X86_64)
 	h.Version = uint32(elf.EV_CURRENT)
-
-	h.Ehsize = uint16(unsafe.Sizeof(elf.Header64{}))
-	h.Phentsize = uint16(unsafe.Sizeof(elf.Prog64{}))
-	h.Shentsize = uint16(unsafe.Sizeof(elf.Section64{}))
-	h.Phoff = uint64(h.Ehsize)
 
 	return h
 }
 
 func X86_32HeaderLinux() ElfHeader32 {
 	var h ElfHeader32
-	h.Ident = [elf.EI_NIDENT]byte{0x7f, 'E', 'L', 'F'}
-	h.Ident[elf.EI_CLASS] = byte(elf.ELFCLASS32)
-	h.Ident[elf.EI_DATA] = byte(elf.ELFDATA2LSB)
+	h.SetBaseData()
+	h.SetByteOrder(binary.LittleEndian)
+
 	h.Ident[elf.EI_VERSION] = byte(elf.EV_CURRENT)
 	h.Ident[elf.EI_OSABI] = byte(elf.ELFOSABI_NONE)
 	h.Ident[elf.EI_ABIVERSION] = 0
@@ -56,10 +64,6 @@ func X86_32HeaderLinux() ElfHeader32 {
 	h.Machine = uint16(elf.EM_X86_64)
 	h.Version = uint32(elf.EV_CURRENT)
 
-	h.Ehsize = uint16(unsafe.Sizeof(elf.Header32{}))
-	h.Phentsize = uint16(unsafe.Sizeof(elf.Prog32{}))
-	h.Shentsize = uint16(unsafe.Sizeof(elf.Section32{}))
-	h.Phoff = uint32(h.Ehsize)
 
 	return h
 }
