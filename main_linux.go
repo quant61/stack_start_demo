@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/quant61/stack_start_demo/internal/binfmt/elf"
 )
 
 func main() {
@@ -16,14 +17,14 @@ func main() {
 	switch *mode {
 	case "32":
 		fmt.Println("RUN FOR 32-BIT")
-		elfRun(buildElfBinary32, 4)
+		elfRun(elf.BuildElfBinary32, 4)
 	case "64":
 		fmt.Println("RUN FOR 64-BIT")
-		elfRun(buildElfBinary64, 8)
+		elfRun(elf.BuildElfBinary64, 8)
 	case "both":
 		fmt.Println("RUN FOR 32-BIT")
-		elfRun(buildElfBinary32, 4)
+		elfRun(elf.BuildElfBinary32, 4)
 		fmt.Println("RUN FOR 64-BIT")
-		elfRun(buildElfBinary64, 8)
+		elfRun(elf.BuildElfBinary64, 8)
 	}
 }

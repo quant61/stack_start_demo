@@ -1,26 +1,15 @@
-package main
+package elf
 
 import (
 	"debug/elf"
 	"encoding/binary"
 	"fmt"
+	"github.com/quant61/stack_start_demo/internal"
 	"unsafe"
 )
 
-type elfHeader64 struct {
-	elf.Header64
-}
-
-func (h elfHeader64) ByteOrder() binary.ByteOrder { return ByteOrderFromElfByte(h.Ident[elf.EI_DATA]) }
-
-type elfHeader32 struct {
-	elf.Header32
-}
-
-func (h elfHeader32) ByteOrder() binary.ByteOrder { return ByteOrderFromElfByte(h.Ident[elf.EI_DATA]) }
-
-type elfProg64 = elf.Prog64
-type elfProg32 = elf.Prog32
+type ElfProg64 = elf.Prog64
+type ElfProg32 = elf.Prog32
 
 func ByteOrderFromElfByte(b byte) binary.ByteOrder {
 	switch elf.Data(b) {
@@ -33,8 +22,8 @@ func ByteOrderFromElfByte(b byte) binary.ByteOrder {
 	}
 }
 
-func amd64HeaderLinux() elfHeader64 {
-	var h elfHeader64
+func Amd64HeaderLinux() ElfHeader64 {
+	var h ElfHeader64
 	h.Ident = [elf.EI_NIDENT]byte{0x7f, 'E', 'L', 'F'}
 	h.Ident[elf.EI_CLASS] = byte(elf.ELFCLASS64)
 	h.Ident[elf.EI_DATA] = byte(elf.ELFDATA2LSB)
@@ -54,8 +43,8 @@ func amd64HeaderLinux() elfHeader64 {
 	return h
 }
 
-func amd32HeaderLinux() elfHeader32 {
-	var h elfHeader32
+func X86_32HeaderLinux() ElfHeader32 {
+	var h ElfHeader32
 	h.Ident = [elf.EI_NIDENT]byte{0x7f, 'E', 'L', 'F'}
 	h.Ident[elf.EI_CLASS] = byte(elf.ELFCLASS32)
 	h.Ident[elf.EI_DATA] = byte(elf.ELFDATA2LSB)
@@ -75,14 +64,14 @@ func amd32HeaderLinux() elfHeader32 {
 	return h
 }
 
-func buildElfBinary64() ([]byte, binary.ByteOrder) {
-	h := amd64HeaderLinux()
+func BuildElfBinary64() ([]byte, binary.ByteOrder) {
+	h := Amd64HeaderLinux()
 	h.Phnum = 1
 
 	const start_addr = 0x10000
 	fileAddrStart := start_addr + int(h.Ehsize) + int(h.Phentsize)*1
 
-	prog0 := elfProg64{
+	prog0 := elf.Prog64{
 		Type:   uint32(elf.PT_LOAD),
 		Flags:  uint32(elf.PF_R | elf.PF_X),
 		Vaddr:  start_addr,
@@ -93,21 +82,21 @@ func buildElfBinary64() ([]byte, binary.ByteOrder) {
 	}
 	h.Entry = uint64(fileAddrStart)
 
-	b := mustBytes(h, h.ByteOrder())
-	b = append(b, mustBytes(prog0, h.ByteOrder())...)
+	b := internal.MustBytes(h, h.ByteOrder())
+	b = append(b, internal.MustBytes(prog0, h.ByteOrder())...)
 	// int 3
 	b = append(b, 0xcc)
 	return b, h.ByteOrder()
 }
 
-func buildElfBinary32() ([]byte, binary.ByteOrder) {
-	h := amd32HeaderLinux()
+func BuildElfBinary32() ([]byte, binary.ByteOrder) {
+	h := X86_32HeaderLinux()
 	h.Phnum = 1
 
 	const start_addr = 0x10000
 	fileAddrStart := start_addr + int(h.Ehsize) + int(h.Phentsize)*1
 
-	prog0 := elfProg32{
+	prog0 := elf.Prog32{
 		Type:   uint32(elf.PT_LOAD),
 		Flags:  uint32(elf.PF_R | elf.PF_X),
 		Vaddr:  start_addr,
@@ -118,8 +107,8 @@ func buildElfBinary32() ([]byte, binary.ByteOrder) {
 	}
 	h.Entry = uint32(fileAddrStart)
 
-	b := mustBytes(h, h.ByteOrder())
-	b = append(b, mustBytes(prog0, h.ByteOrder())...)
+	b := internal.MustBytes(h, h.ByteOrder())
+	b = append(b, internal.MustBytes(prog0, h.ByteOrder())...)
 	// int 3
 	b = append(b, 0xcc)
 	return b, h.ByteOrder()

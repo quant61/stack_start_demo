@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
 	"io"
 	"os/exec"
@@ -9,15 +8,6 @@ import (
 
 type Endian struct {
 	binary.ByteOrder
-}
-
-func mustBytes(v interface{}, ord binary.ByteOrder) []byte {
-	buf := bytes.NewBuffer([]byte{})
-	err := binary.Write(buf, ord, v)
-	if err != nil {
-		panic(err)
-	}
-	return buf.Bytes()
 }
 
 type startProcessArgs struct {
