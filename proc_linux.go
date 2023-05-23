@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/quant61/stack_start_demo/internal/auxv"
 	"io"
 	"io/ioutil"
 	"os"
@@ -150,7 +151,7 @@ func printProcessState(cmd *exec.Cmd, reader *readerHelper) {
 	// auxv part
 	for {
 		_k, err := reader.ReadPtr()
-		k := auxk(_k)
+		k := auxv.Auxk(_k)
 		if err != nil {
 			fmt.Println("cannot read auxv key", err)
 		}
@@ -160,7 +161,7 @@ func printProcessState(cmd *exec.Cmd, reader *readerHelper) {
 		}
 
 		switch k {
-		case AT_PLATFORM, AT_BASE_PLATFORM, AT_EXECFN:
+		case auxv.AT_PLATFORM, auxv.AT_BASE_PLATFORM, auxv.AT_EXECFN:
 			s, _ := reader.CStringAt(int64(v), 4096)
 			fmt.Printf("auxv[%s] at 0x%x = %q\n", k, uintptr(v), s)
 		default:
