@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/quant61/stack_start_demo/internal"
 	"github.com/quant61/stack_start_demo/internal/auxv"
 	"io"
 	"io/ioutil"
@@ -78,7 +79,7 @@ func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 	cmd := startProcess(startProcessArgs{})
 	waitForTraceStop(cmd.Process.Pid)
 
-	reader := &readerHelper{
+	reader := &internal.ReaderHelper{
 		ByteOrder: ord,
 		PtrSize: ptrSize,
 	}
@@ -91,7 +92,7 @@ func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 }
 
 
-func printProcessState(cmd *exec.Cmd, reader *readerHelper) {
+func printProcessState(cmd *exec.Cmd, reader *internal.ReaderHelper) {
 	//ptrSize := int64(reader.PtrParser.Len())
 
 	fmt.Printf("child.pid=%d\n", cmd.Process.Pid)
@@ -115,7 +116,7 @@ func printProcessState(cmd *exec.Cmd, reader *readerHelper) {
 	}
 	dumpStack(mem, int64(regs.Rsp))
 
-	reader.pos = int64(regs.Rsp)
+	reader.Pos = int64(regs.Rsp)
 	reader.ReaderAt = mem
 	// reading argc, argv
 	argc, err := reader.ReadPtr()

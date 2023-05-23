@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"github.com/quant61/stack_start_demo/internal"
 	"golang.org/x/sys/windows"
 	"os"
 	"os/exec"
@@ -223,7 +224,7 @@ func PrintMaps(cmd *exec.Cmd) {
 		fmt.Printf("baseAddr=0x%x\tsize=0x%x\tprot=0x%x\t%s\t%s\n",
 			buf.BaseAddress, buf.RegionSize, buf.AllocationProtect, typStr, stateStr)
 		if pos != buf.BaseAddress {
-			panic("pos != buf.BaseAddress")
+			panic("Pos != buf.BaseAddress")
 		}
 		pos += buf.RegionSize
 	}
@@ -260,11 +261,11 @@ func run() {
 
 	// TODO: unhardcode order and binary size
 	order := binary.LittleEndian
-	reader := &readerHelper{
+	reader := &internal.ReaderHelper{
 		ByteOrder: order,
 		PtrSize: 8,
 	}
-	reader.pos = int64(ctx.Rsp)
+	reader.Pos = int64(ctx.Rsp)
 	reader.ReaderAt = mem
 	dumpStack(mem, int64(ctx.Rsp))
 
@@ -274,5 +275,5 @@ func run() {
 		return
 	}
 
-	fmt.Printf("stack at 0x%x = %d\n", reader.pos-int64(reader.PtrSize), a)
+	fmt.Printf("stack at 0x%x = %d\n", reader.Pos-int64(reader.PtrSize), a)
 }

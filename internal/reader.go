@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"bytes"
@@ -8,14 +8,14 @@ import (
 	"io"
 )
 
-type readerHelper struct {
+type ReaderHelper struct {
 	binary.ByteOrder
 	PtrSize int
 	io.ReaderAt
-	pos int64
+	Pos int64
 }
 
-func (r readerHelper) UintAt(pos int64, sz int) (uint64, error) {
+func (r ReaderHelper) UintAt(pos int64, sz int) (uint64, error) {
 	var b = make([]byte, sz)
 	_, err := r.ReadAt(b, pos)
 	if err != nil {
@@ -31,7 +31,7 @@ func (r readerHelper) UintAt(pos int64, sz int) (uint64, error) {
 	}
 }
 
-func (r readerHelper) PtrAt(pos int64) (int64, error) {
+func (r ReaderHelper) PtrAt(pos int64) (int64, error) {
 	b := make([]byte, r.PtrSize)
 	_, err := r.ReadAt(b, pos)
 	if err != nil {
@@ -40,7 +40,7 @@ func (r readerHelper) PtrAt(pos int64) (int64, error) {
 	return r.ParsePtr(b)
 }
 
-func (r readerHelper) ParsePtr(b []byte) (int64, error) {
+func (r ReaderHelper) ParsePtr(b []byte) (int64, error) {
 	switch r.PtrSize {
 	case 8:
 		return int64(r.ByteOrder.Uint64(b)), nil
@@ -51,14 +51,14 @@ func (r readerHelper) ParsePtr(b []byte) (int64, error) {
 	}
 }
 
-func (r *readerHelper) ReadPtr() (int64, error) {
-	v, err := r.PtrAt(r.pos)
+func (r *ReaderHelper) ReadPtr() (int64, error) {
+	v, err := r.PtrAt(r.Pos)
 	// TODO: should I advance if err != nil?
-	r.pos += int64(r.PtrSize)
+	r.Pos += int64(r.PtrSize)
 	return v, err
 }
 
-func (r readerHelper) CStringAt(pos int64, maxSize int) (string, error) {
+func (r ReaderHelper) CStringAt(pos int64, maxSize int) (string, error) {
 	b := make([]byte, maxSize)
 	// it reports error but reads data correctly
 	n, err := r.ReadAt(b, pos)
@@ -72,11 +72,3 @@ func (r readerHelper) CStringAt(pos int64, maxSize int) (string, error) {
 	// TODO: turn non-nil err into warning
 	return string(b[:end]), nil
 }
-
-
-
-
-
-
-
-
