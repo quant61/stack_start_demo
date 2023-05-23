@@ -10,7 +10,7 @@ import (
 
 type readerHelper struct {
 	binary.ByteOrder
-	PtrParser
+	PtrSize int
 	io.ReaderAt
 	pos int64
 }
@@ -32,18 +32,29 @@ func (r readerHelper) UintAt(pos int64, sz int) (uint64, error) {
 }
 
 func (r readerHelper) PtrAt(pos int64) (int64, error) {
-	b := make([]byte, r.PtrParser.Len())
+	b := make([]byte, r.PtrSize)
 	_, err := r.ReadAt(b, pos)
 	if err != nil {
 		return 0, err
 	}
-	return r.ParsePtr(b), nil
+	return r.ParsePtr(b)
+}
+
+func (r readerHelper) ParsePtr(b []byte) (int64, error) {
+	switch r.PtrSize {
+	case 8:
+		return int64(r.ByteOrder.Uint64(b)), nil
+	case 4:
+		return int64(r.ByteOrder.Uint32(b)), nil
+	default:
+		return 0, fmt.Errorf("unsupported size %d", r.PtrSize)
+	}
 }
 
 func (r *readerHelper) ReadPtr() (int64, error) {
 	v, err := r.PtrAt(r.pos)
 	// TODO: should I advance if err != nil?
-	r.pos += int64(r.PtrParser.Len())
+	r.pos += int64(r.PtrSize)
 	return v, err
 }
 
@@ -61,47 +72,6 @@ func (r readerHelper) CStringAt(pos int64, maxSize int) (string, error) {
 	// TODO: turn non-nil err into warning
 	return string(b[:end]), nil
 }
-
-type PtrParser interface {
-	ParsePtr([]byte) int64
-	Len() int
-}
-
-var parserFactoryByPtrSize = map[int]func(order binary.ByteOrder) PtrParser{
-	4: func(order binary.ByteOrder) PtrParser {
-		return PtrParser32{order: order}
-	},
-	8: func(order binary.ByteOrder) PtrParser {
-		return PtrParser64{order: order}
-	},
-}
-
-type PtrParser32 struct {
-	order binary.ByteOrder
-}
-
-func (p PtrParser32) ParsePtr(b []byte) int64 {
-	return int64(p.order.Uint32(b))
-}
-
-func (p PtrParser32) Len() int {
-	return 4
-}
-
-type PtrParser64 struct {
-	order binary.ByteOrder
-}
-
-func (p PtrParser64) ParsePtr(b []byte) int64 {
-	return int64(p.order.Uint64(b))
-}
-
-func (p PtrParser64) Len() int {
-	return 8
-}
-
-
-
 
 
 

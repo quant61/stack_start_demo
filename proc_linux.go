@@ -80,7 +80,7 @@ func elfRun(elfFactory func() ([]byte, binary.ByteOrder), ptrSize int){
 
 	reader := &readerHelper{
 		ByteOrder: ord,
-		PtrParser: parserFactoryByPtrSize[ptrSize](ord),
+		PtrSize: ptrSize,
 	}
 	printProcessState(cmd, reader)
 	fmt.Println("kill: error = ", cmd.Process.Kill())

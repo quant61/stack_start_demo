@@ -262,8 +262,7 @@ func run() {
 	order := binary.LittleEndian
 	reader := &readerHelper{
 		ByteOrder: order,
-		PtrParser: PtrParser64{order: order},
-
+		PtrSize: 8,
 	}
 	reader.pos = int64(ctx.Rsp)
 	reader.ReaderAt = mem
@@ -275,5 +274,5 @@ func run() {
 		return
 	}
 
-	fmt.Printf("stack at 0x%x = %d\n", reader.pos-int64(reader.PtrParser.Len()), a)
+	fmt.Printf("stack at 0x%x = %d\n", reader.pos-int64(reader.PtrSize), a)
 }
